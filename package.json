@@ -1,0 +1,13 @@
+{
+  "name": "inspectdrive-payments",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "netlify:dev": "npx netlify dev --framework=#static --port 8888"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "square": "^37.1.0"
+  }
+}
