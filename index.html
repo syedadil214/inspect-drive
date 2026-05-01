@@ -5936,7 +5936,22 @@
 
       try {
         // Step 1: Tokenize card (browser → Square, PCI-safe)
-        const tokenResult = await squareCard.tokenize();
+        const [givenName, ...familyNameParts] = name.split(/\s+/);
+        const verificationDetails = {
+          amount: curPlan.amount,
+          billingContact: {
+            givenName: givenName || name,
+            familyName: familyNameParts.join(' ') || givenName || name,
+            email,
+            countryCode: 'GB',
+            postalCode: post
+          },
+          currencyCode: 'GBP',
+          intent: 'CHARGE',
+          customerInitiated: true,
+          sellerKeyedIn: false
+        };
+        const tokenResult = await squareCard.tokenize(verificationDetails);
         if (tokenResult.status !== 'OK') {
           throw new Error(tokenResult.errors?.map(e => e.message).join(', ') || 'Check your card details.');
         }

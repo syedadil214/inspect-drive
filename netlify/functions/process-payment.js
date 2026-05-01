@@ -20,6 +20,17 @@ const PRICES = {
   'Premium Report': 5999
 };
 
+const SQUARE_ERROR_MESSAGES = {
+  GENERIC_DECLINE: 'The card was declined by the bank. Please try a different card or contact your bank.',
+  CARD_DECLINED: 'The card was declined. Please try a different card.',
+  CARD_DECLINED_VERIFICATION_REQUIRED: 'This card requires additional verification. Please try again and complete the bank verification step.',
+  CVV_FAILURE: 'The card security code is incorrect.',
+  ADDRESS_VERIFICATION_FAILURE: 'The billing postcode could not be verified.',
+  EXPIRATION_FAILURE: 'The card expiry date is incorrect.',
+  INSUFFICIENT_FUNDS: 'The card has insufficient funds.',
+  INVALID_ACCOUNT: 'The card account is invalid. Please use a different card.'
+};
+
 exports.handler = async (event) => {
   // Only allow POST
   if (event.httpMethod !== 'POST') {
@@ -114,7 +125,8 @@ exports.handler = async (event) => {
     }
 
     if (squareErrors?.length) {
-      message = squareErrors[0].detail || message;
+      const squareError = squareErrors[0];
+      message = SQUARE_ERROR_MESSAGES[squareError.code] || squareError.detail || message;
       statusCode = 402;
     }
     return {
