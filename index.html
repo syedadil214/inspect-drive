@@ -4095,6 +4095,10 @@
             <label class="flabel" for="vehicleCustomerAddress">Customer Address</label>
             <textarea class="finput vehicle-address" id="vehicleCustomerAddress" placeholder="House, street, city, postcode" autocomplete="street-address"></textarea>
           </div>
+          <div class="fgroup">
+            <label class="flabel" for="vehicleCustomerEmail">Customer Email</label>
+            <input class="finput" type="email" id="vehicleCustomerEmail" placeholder="customer@example.com" autocomplete="email">
+          </div>
           <div class="frow">
             <div class="fgroup">
               <label class="flabel" for="vehicleRegistrationNumber">Car Number</label>
@@ -5997,6 +6001,7 @@
 
       const name = document.getElementById('vehicleCustomerName')?.value.trim() || '';
       const address = document.getElementById('vehicleCustomerAddress')?.value.trim() || '';
+      const email = document.getElementById('vehicleCustomerEmail')?.value.trim() || '';
       const registrationNumber = document.getElementById('vehicleRegistrationNumber')?.value.trim().toUpperCase() || '';
       const vehicleModel = document.getElementById('vehicleModel')?.value.trim() || '';
       const phone = document.getElementById('vehicleCustomerPhone')?.value.trim() || '';
@@ -6005,6 +6010,7 @@
 
       if (!name) { showVehicleRequestStatus('Please enter customer name.', 'error'); return; }
       if (!address) { showVehicleRequestStatus('Please enter customer address.', 'error'); return; }
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showVehicleRequestStatus('Please enter a valid customer email.', 'error'); return; }
       if (!registrationNumber || registrationNumber.length < 3) { showVehicleRequestStatus('Please enter car number.', 'error'); return; }
       if (!vehicleModel) { showVehicleRequestStatus('Please enter car model.', 'error'); return; }
 
@@ -6018,7 +6024,7 @@
         const response = await fetch('/api/send-vehicle-enquiry', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({ name, address, registrationNumber, vehicleModel, phone, notes })
+          body: JSON.stringify({ name, address, email, registrationNumber, vehicleModel, phone, notes })
         });
         const data = await readJsonResponse(response, 'vehicle');
         if (!response.ok || !data.success) throw new Error(data.error || 'Vehicle request could not be sent.');

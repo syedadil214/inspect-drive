@@ -35,10 +35,22 @@ exports.handler = async (event) => {
     const body = JSON.parse(event.body || '{}');
     const name = clean(body.name, 80);
     const address = clean(body.address, 500);
+    const email = clean(body.email, 120);
     const registrationNumber = clean(body.registrationNumber, 20).toUpperCase();
     const vehicleModel = clean(body.vehicleModel, 120);
     const phone = clean(body.phone, 40);
     const notes = clean(body.notes, 1200);
+
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return {
+        statusCode: 400,
+        headers: JSON_HEADERS,
+        body: JSON.stringify({
+          success: false,
+          error: 'Customer email is invalid.'
+        })
+      };
+    }
 
     if (!name || !address || !registrationNumber || !vehicleModel) {
       return {
@@ -59,6 +71,7 @@ exports.handler = async (event) => {
         '',
         `Name: ${name}`,
         `Address: ${address}`,
+        email ? `Customer email: ${email}` : '',
         `Vehicle registration: ${registrationNumber}`,
         `Vehicle model: ${vehicleModel}`,
         phone ? `Phone: ${phone}` : '',
@@ -68,6 +81,7 @@ exports.handler = async (event) => {
         <h2>New vehicle history request</h2>
         <p><strong>Name:</strong> ${escapeHtml(name)}</p>
         <p><strong>Address:</strong> ${escapeHtml(address).replace(/\n/g, '<br>')}</p>
+        ${email ? `<p><strong>Customer email:</strong> ${escapeHtml(email)}</p>` : ''}
         <p><strong>Vehicle registration:</strong> ${escapeHtml(registrationNumber)}</p>
         <p><strong>Vehicle model:</strong> ${escapeHtml(vehicleModel)}</p>
         ${phone ? `<p><strong>Phone:</strong> ${escapeHtml(phone)}</p>` : ''}
