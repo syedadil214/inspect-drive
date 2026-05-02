@@ -5983,6 +5983,14 @@
       document.body.style.overflow = '';
     }
 
+    function goToPricingAfterVehicleRequest() {
+      closeVehicleRequestModal();
+      document.getElementById('homepage').style.display = 'block';
+      document.getElementById('resultsPg').classList.remove('show');
+      document.querySelectorAll('.inner-pg').forEach(p => p.classList.remove('show'));
+      smoothScroll('#pricing-sec');
+    }
+
     async function submitVehicleRequest(event) {
       event.preventDefault();
 
@@ -6015,7 +6023,7 @@
         if (!response.ok || !data.success) throw new Error(data.error || 'Vehicle request could not be sent.');
 
         document.getElementById('vehicleRequestForm').reset();
-        showVehicleRequestStatus('Request sent. Your team will receive the vehicle details by email.', 'success');
+        goToPricingAfterVehicleRequest();
       } catch (err) {
         console.error('Vehicle request error:', err);
         const fallback = err?.message === 'Failed to fetch'
