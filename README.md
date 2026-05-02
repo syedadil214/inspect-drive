@@ -23,6 +23,8 @@ Do not open `index.html` directly with `file://`.
 - `/`
 - `/api/square-config`
 - `/api/process-payment`
+- `/api/send-email`
+- `/api/send-vehicle-enquiry`
 
 ## Required environment variables
 
@@ -33,6 +35,15 @@ SQUARE_ACCESS_TOKEN=your-square-access-token
 SQUARE_APPLICATION_ID=your-square-application-id
 SQUARE_LOCATION_ID=your-square-location-id
 SQUARE_ENVIRONMENT=sandbox
+
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-smtp-username
+SMTP_PASS=your-smtp-password
+MAIL_FROM=Inspect Drive <support@example.com>
+MAIL_TO=Support@inpectdrive.com
+CONTACT_EMAIL=Support@inpectdrive.com
 ```
 
 For production payments, all three Square values must come from the same live Square application/location and the environment must be:
@@ -56,4 +67,7 @@ The Express app also keeps the old Netlify-style routes available for compatibil
 
 - `/.netlify/functions/square-config`
 - `/.netlify/functions/process-payment`
+- `/.netlify/functions/send-email`
+- `/.netlify/functions/send-vehicle-enquiry`
 
+`MAIL_TO` receives contact form enquiries, vehicle history requests, and order notifications. Customers receive a payment confirmation email when SMTP is configured.

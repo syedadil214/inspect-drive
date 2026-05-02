@@ -2705,6 +2705,46 @@
     #square-payment-status.error { background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; display: block; }
     #square-payment-status.success { background: #ECFDF5; color: #059669; border: 1px solid #A7F3D0; display: block; }
 
+    #vehicle-request-status {
+      font-size: 13px;
+      font-weight: 700;
+      padding: 10px 12px;
+      border-radius: var(--r);
+      margin-top: 12px;
+      display: none;
+    }
+
+    #vehicle-request-status.error {
+      background: #FEF2F2;
+      color: #DC2626;
+      border: 1px solid #FECACA;
+      display: block;
+    }
+
+    #vehicle-request-status.success {
+      background: #ECFDF5;
+      color: #059669;
+      border: 1px solid #A7F3D0;
+      display: block;
+    }
+
+    .vehicle-form-note {
+      background: var(--red-pale);
+      border: 2px solid rgba(204, 0, 0, .16);
+      border-radius: var(--r);
+      color: var(--black);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.55;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+    }
+
+    textarea.finput.vehicle-address {
+      min-height: 86px;
+      resize: vertical;
+    }
+
     /* ═══════════════════════════════════════════════
    PAYMENT MODAL
 ═══════════════════════════════════════════════ */
@@ -3584,6 +3624,29 @@
       resize: none
     }
 
+    .cf-status {
+      display: none;
+      margin: 14px 0 0;
+      padding: 11px 14px;
+      border-radius: var(--r);
+      font-size: 13px;
+      font-weight: 700
+    }
+
+    .cf-status.error {
+      display: block;
+      background: #FEF2F2;
+      color: #DC2626;
+      border: 1px solid #FECACA
+    }
+
+    .cf-status.success {
+      display: block;
+      background: #ECFDF5;
+      color: #059669;
+      border: 1px solid #A7F3D0
+    }
+
     .cf-input option {
       background: white
     }
@@ -4012,6 +4075,50 @@
   </div>
 
   <!-- ══ PAYMENT MODAL ══ -->
+  <!-- VEHICLE REQUEST MODAL -->
+  <div class="pay-bg" id="vehicleRequestModal">
+    <div class="pay-box">
+      <div class="pay-head">
+        <h3>Vehicle History Request</h3>
+        <p>Enter customer and vehicle details for the UK history check</p>
+        <button class="pay-close" onclick="closeVehicleRequestModal()">x</button>
+      </div>
+      <div class="pay-body">
+        <form id="vehicleRequestForm" onsubmit="submitVehicleRequest(event)">
+          <div class="vehicle-form-note">These details will be emailed to your team through Nodemailer.</div>
+          <div class="fgroup">
+            <label class="flabel" for="vehicleCustomerName">Customer Name</label>
+            <input class="finput" type="text" id="vehicleCustomerName" placeholder="Full name" autocomplete="name">
+          </div>
+          <div class="fgroup">
+            <label class="flabel" for="vehicleCustomerAddress">Customer Address</label>
+            <textarea class="finput vehicle-address" id="vehicleCustomerAddress" placeholder="House, street, city, postcode" autocomplete="street-address"></textarea>
+          </div>
+          <div class="frow">
+            <div class="fgroup">
+              <label class="flabel" for="vehicleRegistrationNumber">Car Number</label>
+              <input class="finput" type="text" id="vehicleRegistrationNumber" placeholder="AB12 CDE" maxlength="20" style="text-transform:uppercase" autocomplete="off" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9\s]/g,'')">
+            </div>
+            <div class="fgroup">
+              <label class="flabel" for="vehicleModel">Car Model</label>
+              <input class="finput" type="text" id="vehicleModel" placeholder="Toyota Prius 2019" autocomplete="off">
+            </div>
+          </div>
+          <div class="fgroup">
+            <label class="flabel" for="vehicleCustomerPhone">Phone Number</label>
+            <input class="finput" type="tel" id="vehicleCustomerPhone" placeholder="Optional">
+          </div>
+          <div class="fgroup">
+            <label class="flabel" for="vehicleNotes">Notes</label>
+            <textarea class="finput vehicle-address" id="vehicleNotes" placeholder="Optional message"></textarea>
+          </div>
+          <button class="pay-submit" id="vehicleRequestBtn" type="submit">Send Request</button>
+          <div id="vehicle-request-status"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <div class="pay-bg" id="payModal">
     <div class="pay-box">
       <div class="pay-head">
@@ -4157,7 +4264,7 @@
                       onblur="document.getElementById('plateWrap').style.borderColor='var(--border)'">
                   </div>
                 </div>
-                <button class="go-btn" onclick="showHome();smoothScroll('#pricing-sec');return false">🔍 CHECK VEHICLE HISTORY NOW</button>
+                <button class="go-btn" onclick="openVehicleRequestModal('regMain');return false">🔍 CHECK VEHICLE HISTORY NOW</button>
                 <div class="trust-list">
                   <div class="titem"><svg viewBox="0 0 20 20" fill="currentColor">
                       <path fill-rule="evenodd"
@@ -4980,7 +5087,7 @@
 
             </div>
             <button class="go-btn"
-              onclick="document.getElementById('vinMain').value=document.getElementById('ctaInp').value;doSearch()"
+              onclick="openVehicleRequestModal('ctaInp')"
               style="border-radius:var(--r);width:auto;padding:13px 22px;white-space:nowrap">CHECK NOW</button>
           </div>
         </div>
@@ -5130,10 +5237,10 @@
         <div class="cf-card">
           <h3 style="font-size:18px;font-weight:800;color:var(--black);margin-bottom:22px">Send a Message</h3>
           <div class="cf-group"><label class="cf-label">Full Name</label><input class="cf-input" type="text"
-              placeholder="Your name"></div>
+              placeholder="Your name" id="contactName"></div>
           <div class="cf-group"><label class="cf-label">Email Address</label><input class="cf-input" type="email"
-              placeholder="you@example.co.uk"></div>
-          <div class="cf-group"><label class="cf-label">Subject</label><select class="cf-input">
+              placeholder="you@example.co.uk" id="contactEmail"></div>
+          <div class="cf-group"><label class="cf-label">Subject</label><select class="cf-input" id="contactSubject">
               <option>General Enquiry</option>
               <option>Report Issue</option>
               <option>Billing &amp; Payments</option>
@@ -5141,10 +5248,11 @@
               <option>Data Request</option>
             </select></div>
           <div class="cf-group"><label class="cf-label">Message</label><textarea class="cf-input"
-              placeholder="How can we help you?"></textarea></div>
-          <button class="btn btn-red btn-full btn-lg" style="border-radius:var(--r)"
-            onclick="alert('Message sent! Our UK team will respond within 2 hours during business hours.')">Send Message
+              placeholder="How can we help you?" id="contactMessage"></textarea></div>
+          <button class="btn btn-red btn-full btn-lg" id="contactSubmit" style="border-radius:var(--r)"
+            onclick="sendContactMessage()">Send Message
             →</button>
+          <div id="contactStatus" class="cf-status"></div>
         </div>
         <div class="contact-info-list">
           <div class="ci-card">
@@ -5753,6 +5861,13 @@
       return 'Square payments require HTTPS or localhost. Run `npm run dev` and open http://localhost:8888.';
     }
 
+    function getApiEndpoint(target) {
+      if (target === 'config') return '/api/square-config';
+      if (target === 'email') return '/api/send-email';
+      if (target === 'vehicle') return '/api/send-vehicle-enquiry';
+      return '/api/process-payment';
+    }
+
     async function readJsonResponse(response, target) {
       const text = await response.text();
       const contentType = response.headers.get('content-type') || '';
@@ -5767,8 +5882,8 @@
           contentType,
           preview
         });
-        const endpoint = target === 'config' ? '/api/square-config' : '/api/process-payment';
-        throw new Error(`Payment server returned a non-JSON response from ${endpoint}. Check that the Hostinger Node/Express app is running and API requests are not being served as index.html.`);
+        const endpoint = getApiEndpoint(target);
+        throw new Error(`Server returned a non-JSON response from ${endpoint}. Check that the Node/Express app is running and API requests are not being served as index.html.`);
       }
 
       try {
@@ -5780,7 +5895,138 @@
           contentType,
           body: text
         });
-        throw new Error('Payment server returned invalid JSON. Please check the payment function logs.');
+        throw new Error('Server returned invalid JSON. Please check the function logs.');
+      }
+    }
+
+    function showContactStatus(message, type) {
+      const status = document.getElementById('contactStatus');
+      if (!status) return;
+      status.textContent = message;
+      status.className = 'cf-status' + (type ? ' ' + type : '');
+    }
+
+    async function sendContactMessage() {
+      const name = document.getElementById('contactName')?.value.trim() || '';
+      const email = document.getElementById('contactEmail')?.value.trim() || '';
+      const subject = document.getElementById('contactSubject')?.value || 'General Enquiry';
+      const message = document.getElementById('contactMessage')?.value.trim() || '';
+      const button = document.getElementById('contactSubmit');
+
+      if (!name) { showContactStatus('Please enter your name.', 'error'); return; }
+      if (!email || !email.includes('@')) { showContactStatus('Please enter a valid email address.', 'error'); return; }
+      if (!message) { showContactStatus('Please enter your message.', 'error'); return; }
+
+      if (button) {
+        button.disabled = true;
+        button.textContent = 'Sending...';
+      }
+      showContactStatus('', '');
+
+      try {
+        const response = await fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ name, email, subject, message })
+        });
+        const data = await readJsonResponse(response, 'email');
+        if (!response.ok || !data.success) throw new Error(data.error || 'Message could not be sent.');
+
+        document.getElementById('contactName').value = '';
+        document.getElementById('contactEmail').value = '';
+        document.getElementById('contactMessage').value = '';
+        showContactStatus('Message sent. Our UK team will respond within 2 hours during business hours.', 'success');
+      } catch (err) {
+        console.error('Contact email error:', err);
+        const fallback = err?.message === 'Failed to fetch'
+          ? 'Could not reach email server. Make sure the Node/Express server is running.'
+          : (err.message || 'Message could not be sent right now.');
+        showContactStatus(fallback, 'error');
+      } finally {
+        if (button) {
+          button.disabled = false;
+          button.innerHTML = 'Send Message ->';
+        }
+      }
+    }
+
+    function showVehicleRequestStatus(message, type) {
+      const status = document.getElementById('vehicle-request-status');
+      if (!status) return;
+      status.textContent = message;
+      status.className = type || '';
+    }
+
+    function openVehicleRequestModal(sourceInputId) {
+      const modal = document.getElementById('vehicleRequestModal');
+      const form = document.getElementById('vehicleRequestForm');
+      const source = sourceInputId ? document.getElementById(sourceInputId) : null;
+      const registration = source?.value?.trim().toUpperCase() || '';
+
+      if (form) form.reset();
+      showVehicleRequestStatus('', '');
+
+      const regInput = document.getElementById('vehicleRegistrationNumber');
+      if (regInput) regInput.value = registration;
+
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+
+      setTimeout(() => {
+        const nextInputId = registration ? 'vehicleCustomerName' : 'vehicleRegistrationNumber';
+        document.getElementById(nextInputId)?.focus();
+      }, 80);
+    }
+
+    function closeVehicleRequestModal() {
+      document.getElementById('vehicleRequestModal').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    async function submitVehicleRequest(event) {
+      event.preventDefault();
+
+      const name = document.getElementById('vehicleCustomerName')?.value.trim() || '';
+      const address = document.getElementById('vehicleCustomerAddress')?.value.trim() || '';
+      const registrationNumber = document.getElementById('vehicleRegistrationNumber')?.value.trim().toUpperCase() || '';
+      const vehicleModel = document.getElementById('vehicleModel')?.value.trim() || '';
+      const phone = document.getElementById('vehicleCustomerPhone')?.value.trim() || '';
+      const notes = document.getElementById('vehicleNotes')?.value.trim() || '';
+      const button = document.getElementById('vehicleRequestBtn');
+
+      if (!name) { showVehicleRequestStatus('Please enter customer name.', 'error'); return; }
+      if (!address) { showVehicleRequestStatus('Please enter customer address.', 'error'); return; }
+      if (!registrationNumber || registrationNumber.length < 3) { showVehicleRequestStatus('Please enter car number.', 'error'); return; }
+      if (!vehicleModel) { showVehicleRequestStatus('Please enter car model.', 'error'); return; }
+
+      if (button) {
+        button.disabled = true;
+        button.textContent = 'Sending...';
+      }
+      showVehicleRequestStatus('', '');
+
+      try {
+        const response = await fetch('/api/send-vehicle-enquiry', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ name, address, registrationNumber, vehicleModel, phone, notes })
+        });
+        const data = await readJsonResponse(response, 'vehicle');
+        if (!response.ok || !data.success) throw new Error(data.error || 'Vehicle request could not be sent.');
+
+        document.getElementById('vehicleRequestForm').reset();
+        showVehicleRequestStatus('Request sent. Your team will receive the vehicle details by email.', 'success');
+      } catch (err) {
+        console.error('Vehicle request error:', err);
+        const fallback = err?.message === 'Failed to fetch'
+          ? 'Could not reach email server. Make sure the Node/Express server is running.'
+          : (err.message || 'Vehicle request could not be sent right now.');
+        showVehicleRequestStatus(fallback, 'error');
+      } finally {
+        if (button) {
+          button.disabled = false;
+          button.textContent = 'Send Request';
+        }
       }
     }
 
@@ -5991,6 +6237,7 @@
     }
 
     document.getElementById('payModal').addEventListener('click', function(e) { if (e.target === this) closePay() })
+    document.getElementById('vehicleRequestModal').addEventListener('click', function(e) { if (e.target === this) closeVehicleRequestModal() })
     document.getElementById('loadModal').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open') })
     window.addEventListener('DOMContentLoaded', () => {
       initSquare().catch((err) => {

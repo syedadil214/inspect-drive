@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "express": "^5.2.1",
+    "nodemailer": "^8.0.7",
     "square": "^37.1.0"
   }
 }

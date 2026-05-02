@@ -71,6 +71,8 @@ loadLocalEnv();
 
 const { handler: squareConfigHandler } = require('./netlify/functions/square-config');
 const { handler: processPaymentHandler } = require('./netlify/functions/process-payment');
+const { handler: sendEmailHandler } = require('./netlify/functions/send-email');
+const { handler: sendVehicleEnquiryHandler } = require('./netlify/functions/send-vehicle-enquiry');
 
 const app = express();
 
@@ -85,7 +87,7 @@ app.use((error, _req, res, next) => {
     res
       .status(400)
       .set('Cache-Control', 'no-store')
-      .json({ success: false, error: 'Invalid payment request payload.' });
+      .json({ success: false, error: 'Invalid request payload.' });
     return;
   }
 
@@ -98,9 +100,13 @@ app.get('/health', (_req, res) => {
 
 app.get('/api/square-config', wrapNetlifyFunction(squareConfigHandler));
 app.post('/api/process-payment', wrapNetlifyFunction(processPaymentHandler));
+app.post('/api/send-email', wrapNetlifyFunction(sendEmailHandler));
+app.post('/api/send-vehicle-enquiry', wrapNetlifyFunction(sendVehicleEnquiryHandler));
 
 app.get('/.netlify/functions/square-config', wrapNetlifyFunction(squareConfigHandler));
 app.post('/.netlify/functions/process-payment', wrapNetlifyFunction(processPaymentHandler));
+app.post('/.netlify/functions/send-email', wrapNetlifyFunction(sendEmailHandler));
+app.post('/.netlify/functions/send-vehicle-enquiry', wrapNetlifyFunction(sendVehicleEnquiryHandler));
 
 app.use(express.static(ROOT, {
   extensions: ['html'],

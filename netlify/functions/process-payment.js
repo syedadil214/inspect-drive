@@ -1,5 +1,11 @@
 const { Client, Environment } = require('square');
 const crypto = require('crypto');
+const {
+  escapeHtml,
+  getMailTo,
+  isMailConfigured,
+  sendMail
+} = require('./email-service');
 
 const squareClient = new Client({
   accessToken: process.env.SQUARE_ACCESS_TOKEN,
@@ -30,6 +36,78 @@ const SQUARE_ERROR_MESSAGES = {
   INSUFFICIENT_FUNDS: 'The card has insufficient funds.',
   INVALID_ACCOUNT: 'The card account is invalid. Please use a different card.'
 };
+
+async function sendPaymentEmails({ payment, planName, customerName, customerEmail, amountPence, currency }) {
+  if (!isMailConfigured()) return false;
+
+  const hasCustomerEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail || '');
+  const amount = `${currency} ${(amountPence / 100).toFixed(2)}`;
+  const receiptLine = payment.receiptUrl ? `Receipt: ${payment.receiptUrl}` : '';
+  const safePlan = escapeHtml(planName);
+  const safeName = escapeHtml(customerName);
+  const safeEmail = escapeHtml(customerEmail);
+  const safePaymentId = escapeHtml(payment.id);
+  const safeAmount = escapeHtml(amount);
+  const receiptHtml = payment.receiptUrl
+    ? `<p><a href="${escapeHtml(payment.receiptUrl)}">View Square receipt</a></p>`
+    : '';
+
+  const emails = [];
+
+  if (hasCustomerEmail) {
+    emails.push(sendMail({
+      to: customerEmail,
+      subject: `Inspect Drive ${planName} payment confirmed`,
+      text: [
+        `Hi ${customerName},`,
+        '',
+        `Your ${planName} payment has been confirmed.`,
+        `Amount: ${amount}`,
+        `Payment ID: ${payment.id}`,
+        receiptLine,
+        '',
+        'Our team will prepare your report within the stated delivery window.'
+      ].filter(Boolean).join('\n'),
+      html: `
+        <h2>Payment confirmed</h2>
+        <p>Hi ${safeName},</p>
+        <p>Your <strong>${safePlan}</strong> payment has been confirmed.</p>
+        <p><strong>Amount:</strong> ${safeAmount}</p>
+        <p><strong>Payment ID:</strong> ${safePaymentId}</p>
+        ${receiptHtml}
+        <p>Our team will prepare your report within the stated delivery window.</p>
+      `
+    }));
+  }
+
+  emails.push(sendMail({
+    to: getMailTo(),
+    replyTo: hasCustomerEmail ? customerEmail : undefined,
+    subject: `New Inspect Drive order: ${planName}`,
+    text: [
+      `Plan: ${planName}`,
+      `Customer: ${customerName}`,
+      `Email: ${customerEmail}`,
+      `Amount: ${amount}`,
+      `Payment ID: ${payment.id}`,
+      `Status: ${payment.status}`,
+      receiptLine
+    ].filter(Boolean).join('\n'),
+    html: `
+      <h2>New Inspect Drive order</h2>
+      <p><strong>Plan:</strong> ${safePlan}</p>
+      <p><strong>Customer:</strong> ${safeName}</p>
+      <p><strong>Email:</strong> ${safeEmail}</p>
+      <p><strong>Amount:</strong> ${safeAmount}</p>
+      <p><strong>Payment ID:</strong> ${safePaymentId}</p>
+      <p><strong>Status:</strong> ${escapeHtml(payment.status)}</p>
+      ${receiptHtml}
+    `
+  }));
+
+  await Promise.all(emails);
+  return true;
+}
 
 exports.handler = async (event) => {
   // Only allow POST
@@ -102,6 +180,20 @@ exports.handler = async (event) => {
       note: `${planName} for ${customerName}`
     });
 
+    let emailSent = false;
+    try {
+      emailSent = await sendPaymentEmails({
+        payment: result.payment,
+        planName,
+        customerName,
+        customerEmail,
+        amountPence,
+        currency
+      });
+    } catch (emailError) {
+      console.error('Payment confirmation email error:', emailError);
+    }
+
     return {
       statusCode: 200,
       headers: JSON_HEADERS,
@@ -109,7 +201,8 @@ exports.handler = async (event) => {
         success: true,
         paymentId: result.payment.id,
         status: result.payment.status,
-        receiptUrl: result.payment.receiptUrl
+        receiptUrl: result.payment.receiptUrl,
+        emailSent
       })
     };
 
